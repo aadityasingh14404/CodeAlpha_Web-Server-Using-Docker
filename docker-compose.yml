@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  fastapi:
+    build: ./fastapi-app
+    container_name: fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  db:
+    image: bitnami/postgresql:17.4.0
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+  nginx:
+    build: ./nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    depends_on:
+      - fastapi
+
+volumes:
+  redis_data:
+  postgres_data:
